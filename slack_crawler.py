@@ -21,9 +21,9 @@ class SlackCrawler:
                 'attachments': msg.get('attachments', [])
             } for msg in response.get('messages', [])]
 
-            logging.info(f"{len(messages)}개 메시지를 추출했어요.")
+            logging.info(f"Extracted {len(messages)} messages.")
             return messages
 
         except SlackApiError as e:
-            logging.error(f"API Error: {e}")
+            logging.error(f"Crawling Error: {e}")
             return []
