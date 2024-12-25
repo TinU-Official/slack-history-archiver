@@ -13,7 +13,7 @@ def main():
     config = get_config()
 
     logging.basicConfig(
-        filename='../logs/app.log',
+        filename='logs/app.log',
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s: %(message)s'
     )
