@@ -1,32 +1,64 @@
 import logging
-from notion_client import Client
 from datetime import datetime
 
+from notion_client import Client
+
+
 class NotionArchiver:
-    def __init__(self, token, database_id):
+    def __init__(self, token, page_id):
         self.client = Client(auth=token)
-        self.database_id = database_id
+        self.page_id = page_id
 
     def archive_messages(self, messages):
-        for msg in messages:
-            try:
-                self.client.pages.create(
-                    parent={'database_id': self.database_id},
-                    properties={
-                        'Message': {
-                            'rich_text': [{'text': {'content': msg['text']}}]
-                        },
-                        'User': {
-                            'rich_text': [{'text': {'content': msg['user']}}]
-                        },
-                        'Timestamp': {
-                            'date': {
-                                'start': datetime.fromtimestamp(float(msg['timestamp'])).isoformat()
+        try:
+            blocks = []
+            for msg in messages:
+                blocks.append({
+                    "object": "block",
+                    "type": "paragraph",
+                    "paragraph": {
+                        "rich_text": [
+                            {
+                                "type": "text",
+                                "text": {
+                                    "content": f"From: {msg['user']}\n{msg['text']}"
+                                }
                             }
-                        }
+                        ]
                     }
-                )
-                logging.info(f"Archived Message: {msg['text'][:50]}...")
+                })
+                
+                blocks.append({
+                    "object": "block",
+                    "type": "paragraph",
+                    "paragraph": {
+                        "rich_text": [
+                            {
+                                "type": "text",
+                                "text": {
+                                    "content": f"Sent at: {datetime.fromtimestamp(float(msg['timestamp'])).strftime('%Y-%m-%d %H:%M:%S')}"
+                                },
+                                "annotations": {
+                                    "italic": True,
+                                    "color": "gray"
+                                }
+                            }
+                        ]
+                    }
+                })
 
-            except Exception as e:
-                logging.error(f"Archiving Error: {e}")
+                blocks.append({
+                    "object": "block",
+                    "type": "divider",
+                    "divider": {}
+                })
+
+            self.client.blocks.children.append(
+                block_id=self.page_id,
+                children=blocks
+            )
+            
+            logging.info(f"Archived {len(messages)} messages to page")
+
+        except Exception as e:
+            logging.error(f"Archiving Error: {e}")

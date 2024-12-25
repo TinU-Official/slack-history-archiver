@@ -1,12 +1,15 @@
 import logging
+
 from dotenv import load_dotenv
-from slack_crawler import SlackCrawler
-from notion_migrator import NotionMigrator
+
 from config.settings import get_config
+from notion_archiver import NotionArchiver
+from slack_crawler import SlackCrawler
+
+load_dotenv()
 
 def main():
-    # 환경설정 및 로깅 초기화
-    load_dotenv()
+
     config = get_config()
 
     logging.basicConfig(
@@ -16,19 +19,17 @@ def main():
     )
 
     try:
-        # Slack 메시지 크롤링
         slack_crawler = SlackCrawler(
             bot_token=config['slack']['bot_token'],
             channel_id=config['slack']['channel_id']
         )
         messages = slack_crawler.fetch_messages()
 
-        # Notion으로 마이그레이션
-        notion_migrator = NotionMigrator(
+        notion_archiver = NotionArchiver(
             token=config['notion']['token'],
-            database_id=config['notion']['database_id']
+            page_id=config['notion']['page_id']
         )
-        notion_migrator.migrate_messages(messages)
+        notion_archiver.archive_messages(messages)
 
         logging.info("Slack message archiving completed")
 
