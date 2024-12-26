@@ -8,6 +8,6 @@ def get_config():
         },
         'notion': {
             'token': os.getenv('NOTION_TOKEN'),
-            'database_id': os.getenv('NOTION_DATABASE_ID')
+            'page_id': os.getenv('NOTION_PAGE_ID')
         }
     }
